@@ -1,0 +1,138 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'JSON to YAML Converter — Free Online Tool | JSONKit';
+const description =
+  'Free online JSON to YAML converter and YAML to JSON converter. Transform between formats instantly with proper indentation and escaping. Runs in your browser.';
+---
+
+<Layout title={title} description={description}>
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav aria-label="Breadcrumb" class="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/#tools" class="hover:text-brand-600 dark:hover:text-brand-400">Tools</a>
+      <span class="mx-2">/</span>
+      <span class="text-slate-900 dark:text-white">JSON to YAML</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+      JSON ↔ YAML Converter
+    </h1>
+    <p class="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+      Convert JSON to YAML and back. Supports nested objects, arrays, and all data types with proper escaping.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        id="btn-to-yaml"
+        class="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+      >
+        JSON → YAML
+      </button>
+      <button
+        id="btn-to-json"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        YAML → JSON
+      </button>
+      <button
+        id="btn-copy"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5 h-4 w-4"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button
+        id="btn-clear"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Clear
+      </button>
+      <div class="flex items-center gap-2 ml-auto">
+        <label for="indent-select" class="text-sm text-slate-600 dark:text-slate-400">YAML indent:</label>
+        <select id="indent-select" class="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+          <option value="2" selected>2 spaces</option>
+          <option value="4">4 spaces</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="error-bar" class="mt-4 hidden rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert"></div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <div class="flex flex-col">
+        <label for="input-area" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Input</label>
+        <textarea id="input-area" class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder='Paste JSON or YAML here...' spellcheck="false"></textarea>
+      </div>
+      <div class="flex flex-col">
+        <label for="output-area" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Output</label>
+        <textarea id="output-area" readonly class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder="Converted output..." spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <article class="mt-16 max-w-3xl space-y-6 text-slate-600 dark:text-slate-300">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">JSON vs YAML</h2>
+      <p>YAML ("YAML Ain't Markup Language") is a human-friendly data format often used for configuration files (Docker Compose, Kubernetes, CI/CD pipelines). JSON is the universal data interchange format. This tool lets you convert freely between them.</p>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">When to convert?</h2>
+      <ul class="list-disc space-y-2 pl-6">
+        <li>Convert API JSON responses to YAML for config files.</li>
+        <li>Convert YAML configs to JSON for programmatic consumption.</li>
+        <li>Migrate between configuration formats.</li>
+      </ul>
+      <p>All processing runs in your browser. Your data is never sent to any server.</p>
+    </article>
+  </section>
+</Layout>
+
+<script>
+  import YAML from 'yaml';
+
+  const inputEl = document.getElementById('input-area') as HTMLTextAreaElement;
+  const outputEl = document.getElementById('output-area') as HTMLTextAreaElement;
+  const errorBar = document.getElementById('error-bar') as HTMLDivElement;
+  const indentSelect = document.getElementById('indent-select') as HTMLSelectElement;
+
+  function showError(msg: string) { errorBar.textContent = msg; errorBar.classList.remove('hidden'); }
+  function hideError() { errorBar.classList.add('hidden'); }
+
+  function toJson() {
+    hideError();
+    const raw = inputEl.value.trim();
+    if (!raw) { outputEl.value = ''; return; }
+    try {
+      const obj = YAML.parse(raw);
+      outputEl.value = JSON.stringify(obj, null, 2);
+    } catch (err: any) {
+      showError('YAML parse error: ' + (err.message ?? 'Invalid YAML'));
+      outputEl.value = '';
+    }
+  }
+
+  function toYaml() {
+    hideError();
+    const raw = inputEl.value.trim();
+    if (!raw) { outputEl.value = ''; return; }
+    try {
+      const obj = JSON.parse(raw);
+      outputEl.value = YAML.stringify(obj, { indent: parseInt(indentSelect.value) });
+    } catch (err: any) {
+      showError('JSON parse error: ' + (err.message ?? 'Invalid JSON'));
+      outputEl.value = '';
+    }
+  }
+
+  function copy() {
+    const t = outputEl.value; if (!t) return;
+    navigator.clipboard.writeText(t).then(() => {
+      const btn = document.getElementById('btn-copy')!;
+      const orig = btn.innerHTML; btn.innerHTML = 'Copied!';
+      setTimeout(() => { btn.innerHTML = orig; }, 1500);
+    });
+  }
+
+  document.getElementById('btn-to-yaml')!.addEventListener('click', toYaml);
+  document.getElementById('btn-to-json')!.addEventListener('click', toJson);
+  document.getElementById('btn-copy')!.addEventListener('click', copy);
+  document.getElementById('btn-clear')!.addEventListener('click', () => { inputEl.value = ''; outputEl.value = ''; hideError(); });
+</script>

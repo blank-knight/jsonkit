@@ -1,0 +1,113 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'JSON Validator — Check JSON Syntax Online | JSONKit';
+const description =
+  'Free online JSON validator. Paste JSON and instantly see if it is valid, with detailed error messages showing line and column numbers. Runs in your browser.';
+---
+
+<Layout title={title} description={description}>
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav aria-label="Breadcrumb" class="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/#tools" class="hover:text-brand-600 dark:hover:text-brand-400">Tools</a>
+      <span class="mx-2">/</span>
+      <span class="text-slate-900 dark:text-white">JSON Validator</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+      JSON Validator
+    </h1>
+    <p class="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+      Paste JSON below to validate its syntax. Errors are highlighted with exact line and column numbers.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        id="btn-validate"
+        class="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+      >
+        Validate
+      </button>
+      <button
+        id="btn-clear"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Clear
+      </button>
+    </div>
+
+    <!-- Result banner -->
+    <div id="result-bar" class="mt-4 hidden rounded-md px-4 py-3 text-sm font-medium" role="status"></div>
+
+    <div class="mt-4">
+      <label for="json-input" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JSON Input</label>
+      <textarea
+        id="json-input"
+        class="w-full min-h-[400px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500"
+        placeholder='Paste JSON here to validate...'
+        spellcheck="false"
+      ></textarea>
+    </div>
+
+    <!-- Stats -->
+    <div id="stats" class="mt-3 text-sm text-slate-500 dark:text-slate-400"></div>
+
+    <article class="mt-16 max-w-3xl space-y-6 text-slate-600 dark:text-slate-300">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">What is JSON Validation?</h2>
+      <p>JSON validation checks whether a string conforms to the JSON specification (RFC 8259). Common errors include trailing commas, single quotes instead of double quotes, unquoted keys, and comments (which are not part of the JSON spec).</p>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Common JSON errors</h2>
+      <ul class="list-disc space-y-2 pl-6">
+        <li>Trailing commas before <code class="rounded bg-slate-100 px-1 py-0.5 text-sm dark:bg-slate-800">}</code> or <code class="rounded bg-slate-100 px-1 py-0.5 text-sm dark:bg-slate-800">]</code></li>
+        <li>Single-quoted strings instead of double-quoted</li>
+        <li>Unquoted object keys</li>
+        <li>Comments (<code class="rounded bg-slate-100 px-1 py-0.5 text-sm dark:bg-slate-800">//</code> or <code class="rounded bg-slate-100 px-1 py-0.5 text-sm dark:bg-slate-800">/* */</code>)</li>
+        <li>Missing commas between elements</li>
+      </ul>
+      <p>All processing runs in your browser. Your data is never sent to any server.</p>
+    </article>
+  </section>
+</Layout>
+
+<script>
+  const input = document.getElementById('json-input') as HTMLTextAreaElement;
+  const resultBar = document.getElementById('result-bar') as HTMLDivElement;
+  const statsEl = document.getElementById('stats') as HTMLDivElement;
+
+  function validate() {
+    const raw = input.value.trim();
+    if (!raw) {
+      resultBar.classList.add('hidden');
+      statsEl.textContent = '';
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw);
+      const type = Array.isArray(parsed) ? 'array' : parsed === null ? 'null' : typeof parsed;
+      const keys = typeof parsed === 'object' && parsed !== null ? Object.keys(parsed).length : 0;
+
+      resultBar.textContent = `✓ Valid JSON — type: ${type}` + (keys ? `, ${keys} top-level key${keys > 1 ? 's' : ''}` : '');
+      resultBar.className = 'mt-4 rounded-md bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300';
+      statsEl.textContent = `Size: ${raw.length} characters, ${raw.split('\n').length} lines`;
+    } catch (err: any) {
+      const match = err.message?.match(/position\s+(\d+)/i);
+      let hint = err.message ?? 'Invalid JSON';
+      if (match) {
+        const pos = parseInt(match[1], 10);
+        const before = raw.substring(0, pos);
+        const line = (before.match(/\n/g) || []).length + 1;
+        const col = pos - before.lastIndexOf('\n');
+        hint += ` — Line ${line}, Column ${col}`;
+      }
+      resultBar.textContent = `✗ ${hint}`;
+      resultBar.className = 'mt-4 rounded-md bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300';
+      statsEl.textContent = '';
+    }
+  }
+
+  document.getElementById('btn-validate')!.addEventListener('click', validate);
+  document.getElementById('btn-clear')!.addEventListener('click', () => { input.value = ''; resultBar.classList.add('hidden'); statsEl.textContent = ''; });
+  input.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); validate(); } });
+  input.addEventListener('input', validate);
+</script>

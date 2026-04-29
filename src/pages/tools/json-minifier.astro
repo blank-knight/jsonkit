@@ -1,0 +1,114 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'JSON Minifier — Compress JSON Online | JSONKit';
+const description =
+  'Free online JSON minifier. Strip whitespace, comments, and unnecessary characters to produce the smallest valid JSON payload. Runs in your browser.';
+---
+
+<Layout title={title} description={description}>
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav aria-label="Breadcrumb" class="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/#tools" class="hover:text-brand-600 dark:hover:text-brand-400">Tools</a>
+      <span class="mx-2">/</span>
+      <span class="text-slate-900 dark:text-white">JSON Minifier</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+      JSON Minifier
+    </h1>
+    <p class="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+      Compress JSON by removing all unnecessary whitespace. Ideal for reducing file size before deployment or transmission.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        id="btn-minify"
+        class="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+      >
+        Minify
+      </button>
+      <button
+        id="btn-copy"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5 h-4 w-4"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button
+        id="btn-clear"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Clear
+      </button>
+      <div id="stats" class="ml-auto text-sm text-slate-500 dark:text-slate-400"></div>
+    </div>
+
+    <div id="error-bar" class="mt-4 hidden rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert"></div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <div class="flex flex-col">
+        <label for="json-input" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Input</label>
+        <textarea id="json-input" class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder='Paste JSON here...' spellcheck="false"></textarea>
+      </div>
+      <div class="flex flex-col">
+        <label for="json-output" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Output</label>
+        <textarea id="json-output" readonly class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder="Minified output..." spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <article class="mt-16 max-w-3xl space-y-6 text-slate-600 dark:text-slate-300">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">What is JSON Minification?</h2>
+      <p>JSON minification removes all unnecessary whitespace (spaces, tabs, newlines) from JSON text, producing the smallest valid representation. This reduces file size and improves transmission speed.</p>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Why minify JSON?</h2>
+      <ul class="list-disc space-y-2 pl-6">
+        <li>Reduce API response payload size by 30-60%.</li>
+        <li>Speed up file transfers and page load times.</li>
+        <li>Meet size limits in messaging queues or storage systems.</li>
+      </ul>
+      <p>All processing runs in your browser. Your data is never sent to any server.</p>
+    </article>
+  </section>
+</Layout>
+
+<script>
+  const input = document.getElementById('json-input') as HTMLTextAreaElement;
+  const output = document.getElementById('json-output') as HTMLTextAreaElement;
+  const errorBar = document.getElementById('error-bar') as HTMLDivElement;
+  const stats = document.getElementById('stats') as HTMLDivElement;
+
+  function showError(msg: string) { errorBar.textContent = msg; errorBar.classList.remove('hidden'); }
+  function hideError() { errorBar.classList.add('hidden'); }
+
+  function minify() {
+    hideError();
+    const raw = input.value.trim();
+    if (!raw) { output.value = ''; stats.textContent = ''; return; }
+    try {
+      const parsed = JSON.parse(raw);
+      const result = JSON.stringify(parsed);
+      output.value = result;
+      const saved = ((1 - result.length / raw.length) * 100).toFixed(1);
+      stats.textContent = `${raw.length} → ${result.length} chars (${saved}% smaller)`;
+    } catch (err: any) {
+      showError(err.message ?? 'Invalid JSON');
+      output.value = ''; stats.textContent = '';
+    }
+  }
+
+  function copy() {
+    const t = output.value; if (!t) return;
+    navigator.clipboard.writeText(t).then(() => {
+      const btn = document.getElementById('btn-copy')!;
+      const orig = btn.innerHTML; btn.innerHTML = 'Copied!';
+      setTimeout(() => { btn.innerHTML = orig; }, 1500);
+    });
+  }
+
+  document.getElementById('btn-minify')!.addEventListener('click', minify);
+  document.getElementById('btn-copy')!.addEventListener('click', copy);
+  document.getElementById('btn-clear')!.addEventListener('click', () => { input.value = ''; output.value = ''; hideError(); stats.textContent = ''; });
+  input.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); minify(); } });
+</script>

@@ -1,0 +1,145 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'JSON to CSV Converter — Flatten JSON Online | JSONKit';
+const description =
+  'Free online JSON to CSV converter. Flatten arrays of objects into CSV format with auto-detected headers. Download or copy the result. Runs in your browser.';
+---
+
+<Layout title={title} description={description}>
+  <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav aria-label="Breadcrumb" class="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <a href="/" class="hover:text-brand-600 dark:hover:text-brand-400">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/#tools" class="hover:text-brand-600 dark:hover:text-brand-400">Tools</a>
+      <span class="mx-2">/</span>
+      <span class="text-slate-900 dark:text-white">JSON to CSV</span>
+    </nav>
+
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+      JSON to CSV Converter
+    </h1>
+    <p class="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+      Convert an array of JSON objects into CSV format. Headers are auto-detected from all keys. Nested objects are stringified.
+    </p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        id="btn-convert"
+        class="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+      >
+        Convert to CSV
+      </button>
+      <button
+        id="btn-copy"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5 h-4 w-4"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+      <button
+        id="btn-download"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Download .csv
+      </button>
+      <button
+        id="btn-clear"
+        class="inline-flex items-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Clear
+      </button>
+    </div>
+
+    <div id="error-bar" class="mt-4 hidden rounded-md bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300" role="alert"></div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-2">
+      <div class="flex flex-col">
+        <label for="json-input" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">JSON Input (array of objects)</label>
+        <textarea id="json-input" class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder='[{"name":"Alice","age":30},{"name":"Bob","age":25}]' spellcheck="false"></textarea>
+      </div>
+      <div class="flex flex-col">
+        <label for="csv-output" class="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">CSV Output</label>
+        <textarea id="csv-output" readonly class="flex-1 min-h-[350px] rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-900 placeholder-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500" placeholder="CSV output will appear here..." spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <article class="mt-16 max-w-3xl space-y-6 text-slate-600 dark:text-slate-300">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">JSON to CSV Conversion</h2>
+      <p>This tool converts a JSON array of flat objects into CSV (Comma-Separated Values) format. It collects all unique keys across objects to build the header row, and stringifies any nested objects or arrays.</p>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-white">When to use?</h2>
+      <ul class="list-disc space-y-2 pl-6">
+        <li>Import API response data into Excel or Google Sheets.</li>
+        <li>Convert JSON data for use in data analysis tools.</li>
+        <li>Export structured data to a universal tabular format.</li>
+      </ul>
+      <p>All processing runs in your browser. Your data is never sent to any server.</p>
+    </article>
+  </section>
+</Layout>
+
+<script>
+  const inputEl = document.getElementById('json-input') as HTMLTextAreaElement;
+  const outputEl = document.getElementById('csv-output') as HTMLTextAreaElement;
+  const errorBar = document.getElementById('error-bar') as HTMLDivElement;
+
+  function showError(msg: string) { errorBar.textContent = msg; errorBar.classList.remove('hidden'); }
+  function hideError() { errorBar.classList.add('hidden'); }
+
+  function escapeCSV(val: any): string {
+    const s = val === null || val === undefined ? '' : typeof val === 'object' ? JSON.stringify(val) : String(val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  }
+
+  function convert() {
+    hideError();
+    const raw = inputEl.value.trim();
+    if (!raw) { outputEl.value = ''; return; }
+    try {
+      const data = JSON.parse(raw);
+      if (!Array.isArray(data)) { showError('Input must be a JSON array of objects.'); outputEl.value = ''; return; }
+      if (data.length === 0) { showError('Array is empty.'); outputEl.value = ''; return; }
+
+      // Collect all keys
+      const keys = new Set<string>();
+      data.forEach((item: any) => { if (item && typeof item === 'object' && !Array.isArray(item)) Object.keys(item).forEach(k => keys.add(k)); });
+      const headers = Array.from(keys);
+
+      const lines: string[] = [headers.map(escapeCSV).join(',')];
+      data.forEach((item: any) => {
+        const row = headers.map(h => escapeCSV(item?.[h]));
+        lines.push(row.join(','));
+      });
+
+      outputEl.value = lines.join('\n');
+    } catch (err: any) {
+      showError(err.message ?? 'Invalid JSON');
+      outputEl.value = '';
+    }
+  }
+
+  function copy() {
+    const t = outputEl.value; if (!t) return;
+    navigator.clipboard.writeText(t).then(() => {
+      const btn = document.getElementById('btn-copy')!;
+      const orig = btn.innerHTML; btn.innerHTML = 'Copied!';
+      setTimeout(() => { btn.innerHTML = orig; }, 1500);
+    });
+  }
+
+  function download() {
+    const t = outputEl.value; if (!t) return;
+    const blob = new Blob([t], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'data.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btn-convert')!.addEventListener('click', convert);
+  document.getElementById('btn-copy')!.addEventListener('click', copy);
+  document.getElementById('btn-download')!.addEventListener('click', download);
+  document.getElementById('btn-clear')!.addEventListener('click', () => { inputEl.value = ''; outputEl.value = ''; hideError(); });
+  inputEl.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); convert(); } });
+</script>

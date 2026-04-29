@@ -39,7 +39,7 @@ export const tools: Tool[] = [
     description: 'Strip whitespace and comments to produce the smallest valid JSON payload.',
     href: '/tools/json-minifier',
     icon: icons.minify,
-    available: false,
+    available: true,
   },
   {
     slug: 'json-validator',
@@ -47,7 +47,7 @@ export const tools: Tool[] = [
     description: 'Validate JSON against the spec, with line/column error reporting.',
     href: '/tools/json-validator',
     icon: icons.check,
-    available: false,
+    available: true,
   },
   {
     slug: 'json-to-yaml',
@@ -55,7 +55,7 @@ export const tools: Tool[] = [
     description: 'Convert JSON documents to YAML — and back — with proper escaping.',
     href: '/tools/json-to-yaml',
     icon: icons.yaml,
-    available: false,
+    available: true,
   },
   {
     slug: 'json-to-csv',
@@ -63,7 +63,7 @@ export const tools: Tool[] = [
     description: 'Flatten arrays of objects into CSV with auto-detected headers.',
     href: '/tools/json-to-csv',
     icon: icons.csv,
-    available: false,
+    available: true,
   },
   {
     slug: 'json-path-query',
@@ -71,7 +71,7 @@ export const tools: Tool[] = [
     description: 'Extract values from JSON with JSONPath expressions, live preview.',
     href: '/tools/json-path-query',
     icon: icons.query,
-    available: false,
+    available: true,
   },
   {
     slug: 'json-diff',
@@ -79,6 +79,6 @@ export const tools: Tool[] = [
     description: 'Compare two JSON documents structurally and highlight every change.',
     href: '/tools/json-diff',
     icon: icons.diff,
-    available: false,
+    available: true,
   },
 ];
