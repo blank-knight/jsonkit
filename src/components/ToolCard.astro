@@ -1,0 +1,60 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+  available?: boolean;
+}
+
+const { title, description, href, icon, available = true } = Astro.props;
+---
+
+<a
+  href={available ? href : '#'}
+  aria-disabled={!available}
+  class:list={[
+    'group relative flex flex-col rounded-xl border p-6 transition',
+    available
+      ? 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/60'
+      : 'pointer-events-none cursor-not-allowed border-dashed border-slate-200 bg-slate-50 opacity-70 dark:border-slate-800 dark:bg-slate-900/40',
+  ]}
+>
+  <div
+    class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition group-hover:bg-brand-500 group-hover:text-white dark:bg-slate-800 dark:text-brand-400"
+    aria-hidden="true"
+    set:html={icon}
+  />
+
+  <div class="flex items-center gap-2">
+    <h3 class="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+    {!available && (
+      <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+        Soon
+      </span>
+    )}
+  </div>
+
+  <p class="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+    {description}
+  </p>
+
+  <span class="mt-4 inline-flex items-center text-sm font-medium text-brand-600 dark:text-brand-400">
+    {available ? 'Open tool' : 'Coming soon'}
+    {available && (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="ml-1 h-4 w-4 transition group-hover:translate-x-0.5"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14M13 5l7 7-7 7"></path>
+      </svg>
+    )}
+  </span>
+</a>

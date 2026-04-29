@@ -1,0 +1,43 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="mt-20 border-t border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/40">
+  <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="grid gap-8 md:grid-cols-3">
+      <div>
+        <a href="/" class="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+          <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-500 font-mono text-sm font-bold text-white">{`{ }`}</span>
+          <span class="text-lg tracking-tight">JSONKit</span>
+        </a>
+        <p class="mt-3 max-w-xs text-sm text-slate-600 dark:text-slate-400">
+          Free, fast, privacy-friendly JSON tools that run entirely in your browser.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tools</h3>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/tools/json-formatter">JSON Formatter</a></li>
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/tools/json-minifier">JSON Minifier</a></li>
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/tools/json-validator">JSON Validator</a></li>
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/tools/json-to-yaml">JSON to YAML</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Resources</h3>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/#about">About</a></li>
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="/privacy">Privacy</a></li>
+          <li><a class="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="https://www.json.org" target="_blank" rel="noopener noreferrer">JSON Spec</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center dark:border-slate-800 dark:text-slate-400">
+      <p>&copy; {year} JSONKit. All rights reserved.</p>
+      <p>Built with Astro &amp; Tailwind CSS.</p>
+    </div>
+  </div>
+</footer>

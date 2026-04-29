@@ -1,0 +1,23 @@
+{
+  "name": "jsonkit",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Free online JSON tools for developers — formatter, minifier, validator, converters and more.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^8.0.4",
+    "@tailwindcss/vite": "^4.0.0",
+    "astro": "^5.1.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
