@@ -1,0 +1,169 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'How to Format JSON in Python (Pretty-Print, Indent, Sort Keys)';
+const description =
+  'Three reliable ways to pretty-print JSON in Python — using json.dumps, the json.tool CLI, and a streaming approach for very large files. With copy-paste examples.';
+const date = '2026-04-30';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        <time datetime={date}>{date}</time> · 6 min read
+      </p>
+      <h1 class="mt-2 text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        How to Format JSON in Python (Pretty-Print, Indent, Sort Keys)
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        A quick reference for pretty-printing, indenting, and sorting JSON output in Python — plus how to handle large files without blowing up memory.
+      </p>
+    </header>
+
+    <div class="article">
+      <h2>1. The simple case: <code>json.dumps</code> with <code>indent</code></h2>
+      <p>
+        Most of the time, you have a Python dict or list and you want a readable JSON string. The standard library
+        does this in one line:
+      </p>
+      <pre><code>{`import json
+
+data = {"name": "Ada", "skills": ["python", "rust"], "active": True}
+
+print(json.dumps(data, indent=2))`}</code></pre>
+      <p>Output:</p>
+      <pre><code>{`{
+  "name": "Ada",
+  "skills": [
+    "python",
+    "rust"
+  ],
+  "active": true
+}`}</code></pre>
+      <p>
+        Two arguments matter most: <code>indent</code> (number of spaces per level, or a string like
+        <code>"\t"</code>) and <code>sort_keys</code> (boolean, sorts object keys alphabetically — useful for diffs
+        and reproducible output).
+      </p>
+      <pre><code>{`json.dumps(data, indent=4, sort_keys=True)`}</code></pre>
+
+      <h2>2. Reading a file and rewriting it formatted</h2>
+      <p>
+        To pretty-print an existing JSON file in place:
+      </p>
+      <pre><code>{`import json
+
+with open("config.json", "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+with open("config.json", "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\\n")  # POSIX-friendly trailing newline`}</code></pre>
+      <p>
+        Two things worth knowing:
+      </p>
+      <ul>
+        <li>
+          <code>ensure_ascii=False</code> preserves non-ASCII characters (Chinese, accents, emoji) instead of escaping
+          them as <code>\uXXXX</code>. Almost always what you want for human-readable files.
+        </li>
+        <li>
+          <code>json.dump</code> writes directly to a file object; <code>json.dumps</code> returns a string.
+        </li>
+      </ul>
+
+      <h2>3. The CLI shortcut: <code>python -m json.tool</code></h2>
+      <p>
+        For one-off formatting from a terminal, you don't need to write a script:
+      </p>
+      <pre><code>{`# Format stdin to stdout
+cat ugly.json | python -m json.tool
+
+# Format a file in place
+python -m json.tool ugly.json pretty.json
+
+# Sort keys too
+python -m json.tool --sort-keys ugly.json pretty.json`}</code></pre>
+      <p>
+        This works on any machine with Python installed — no extra packages required.
+      </p>
+
+      <h2>4. Handling large files without exploding memory</h2>
+      <p>
+        <code>json.load</code> reads the entire document into memory. For files larger than a few hundred MB, that
+        becomes a problem. Two approaches:
+      </p>
+      <h3>4.1 Stream parsing with <code>ijson</code></h3>
+      <pre><code>{`# pip install ijson
+import ijson, json
+
+with open("huge.json", "rb") as f:
+    with open("huge.formatted.json", "w", encoding="utf-8") as out:
+        out.write("[\\n")
+        first = True
+        for item in ijson.items(f, "item"):
+            if not first:
+                out.write(",\\n")
+            json.dump(item, out, indent=2)
+            first = False
+        out.write("\\n]\\n")`}</code></pre>
+      <p>
+        This works when the top-level value is an array. <code>ijson</code> yields one element at a time, so memory
+        stays bounded.
+      </p>
+      <h3>4.2 Line-delimited JSON (NDJSON / JSONL)</h3>
+      <p>
+        If you control the format, prefer line-delimited JSON for very large datasets. Each line is one valid JSON
+        document, which makes both formatting and processing trivial:
+      </p>
+      <pre><code>{`with open("data.jsonl", "r", encoding="utf-8") as src, \\
+     open("data.formatted.jsonl", "w", encoding="utf-8") as dst:
+    for line in src:
+        if line.strip():
+            obj = json.loads(line)
+            dst.write(json.dumps(obj, sort_keys=True) + "\\n")`}</code></pre>
+
+      <h2>5. Common gotchas</h2>
+      <ul>
+        <li>
+          <strong>Bytes vs str</strong>: <code>json.loads</code> accepts both, but <code>json.load</code> on a file
+          opened with <code>"rb"</code> can produce surprises with encodings. Stick to <code>"r"</code> +
+          <code>encoding="utf-8"</code> for text JSON.
+        </li>
+        <li>
+          <strong>Booleans and <code>None</code></strong>: Python's <code>True</code>/<code>False</code>/<code>None</code>
+          serialize to <code>true</code>/<code>false</code>/<code>null</code> automatically.
+        </li>
+        <li>
+          <strong>Custom objects</strong>: <code>datetime</code>, <code>Decimal</code>, <code>UUID</code> etc. are not
+          JSON-serializable by default. Pass <code>default=str</code> for a quick fix, or write a custom
+          <code>json.JSONEncoder</code> subclass for production code.
+        </li>
+        <li>
+          <strong>Trailing commas</strong>: Python tolerates them in dicts/lists, but JSON does not. If you build
+          JSON by string concatenation, you will hit this. Build dicts/lists and serialize with <code>json.dumps</code>
+          instead.
+        </li>
+      </ul>
+
+      <h2>Need a quick browser tool?</h2>
+      <p>
+        If you just want to paste JSON and see it formatted without firing up a Python REPL, the
+        <a href="/tools/json-formatter">JSONKit Formatter</a> does it 100% in your browser — no upload, no signup.
+        For checking validity first, try the
+        <a href="/tools/json-validator">JSON Validator</a>; for compact output, the
+        <a href="/tools/json-minifier">JSON Minifier</a>.
+      </p>
+
+      <h2>Summary</h2>
+      <ul>
+        <li><code>json.dumps(data, indent=2)</code> for in-code formatting.</li>
+        <li><code>python -m json.tool</code> for quick CLI formatting.</li>
+        <li><code>ijson</code> or NDJSON for very large files.</li>
+        <li>Use <code>ensure_ascii=False</code> for human-readable Unicode and <code>sort_keys=True</code> for
+        reproducible output.</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

@@ -1,0 +1,176 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'JSON vs YAML: When to Use Which (with Real Examples)';
+const description =
+  'A practical comparison of JSON and YAML — syntax, readability, performance, tooling, and the specific cases where each format is the right choice.';
+const date = '2026-04-30';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        <time datetime={date}>{date}</time> · 7 min read
+      </p>
+      <h1 class="mt-2 text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        JSON vs YAML: When to Use Which
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        Both formats describe the same kinds of data, but they trade off in very different directions. Here is a
+        decision guide based on real projects.
+      </p>
+    </header>
+
+    <div class="article">
+      <h2>The 30-second answer</h2>
+      <ul>
+        <li>
+          <strong>Use JSON</strong> when the producer or consumer is a program — APIs, browser-server traffic,
+          interchange between services, log lines, anything machine-generated.
+        </li>
+        <li>
+          <strong>Use YAML</strong> when the producer is a human — application configs, infrastructure-as-code,
+          CI pipeline definitions, Kubernetes manifests.
+        </li>
+      </ul>
+      <p>
+        The rest of this article explains <em>why</em>, with concrete examples and the pitfalls that bite teams
+        who choose the wrong format.
+      </p>
+
+      <h2>Side-by-side: the same data in both formats</h2>
+      <p>JSON:</p>
+      <pre><code>{`{
+  "service": "api",
+  "port": 8080,
+  "replicas": 3,
+  "env": {
+    "LOG_LEVEL": "info",
+    "FEATURE_FLAGS": ["billing_v2", "new_search"]
+  }
+}`}</code></pre>
+      <p>YAML:</p>
+      <pre><code>{`service: api
+port: 8080
+replicas: 3
+env:
+  LOG_LEVEL: info
+  FEATURE_FLAGS:
+    - billing_v2
+    - new_search`}</code></pre>
+      <p>
+        YAML is shorter and free of quotes and braces. JSON is uglier for humans but unambiguous for machines.
+        That single tradeoff drives almost every other difference.
+      </p>
+
+      <h2>1. Readability and edit ergonomics</h2>
+      <p>
+        YAML wins clearly. Indentation maps to nesting, comments are allowed (<code># like this</code>), and there
+        is far less punctuation noise. For a 200-line Kubernetes manifest, YAML is genuinely easier to read.
+      </p>
+      <p>
+        JSON does not allow comments at all, which is a real friction point for human-edited files. People work
+        around it with <code>"_comment"</code> keys, but it's a sign you should switch to YAML, JSON5, or TOML.
+      </p>
+
+      <h2>2. Strictness and parser surprises</h2>
+      <p>
+        YAML's flexibility is also its biggest footgun. The classic example is the "Norway problem":
+      </p>
+      <pre><code>{`countries:
+  - NO
+  - SE
+  - DK`}</code></pre>
+      <p>
+        In YAML 1.1, <code>NO</code> parses as the boolean <code>false</code>. The fix is to quote it
+        (<code>"NO"</code>) or use a YAML 1.2-compliant parser. JSON has no such ambiguity — strings are always
+        quoted and types are unambiguous.
+      </p>
+      <p>Other YAML surprises:</p>
+      <ul>
+        <li><code>yes</code>, <code>no</code>, <code>on</code>, <code>off</code> may parse as booleans.</li>
+        <li>Sexagesimal numbers (<code>1:30</code>) may parse as 90.</li>
+        <li>Leading zeros may trigger octal interpretation.</li>
+      </ul>
+      <p>
+        If you're shipping configuration to production, prefer a strict YAML 1.2 parser and quote string-y values
+        defensively.
+      </p>
+
+      <h2>3. Performance</h2>
+      <p>
+        JSON parsers are everywhere, fast, and well-optimized. Browsers parse JSON natively. YAML parsing is
+        meaningfully slower — typically 5-50x — because the grammar is far more complex. For high-throughput
+        data interchange (think: log shippers, message queues, internal APIs), JSON is the obvious choice.
+      </p>
+
+      <h2>4. Tooling and ecosystem</h2>
+      <p>
+        Both have parsers in every major language, but JSON has a deeper toolbox: <code>jq</code> for command-line
+        querying, JSON Schema for validation, JSONPath for selection, native browser support, and an ocean of
+        formatters and diff tools (you can pretty-print JSON with the
+        <a href="/tools/json-formatter">JSONKit Formatter</a> directly in your browser).
+      </p>
+      <p>
+        YAML has solid tooling for editing (linters, language servers in VS Code), but the validation and
+        querying ecosystem is younger.
+      </p>
+
+      <h2>5. Comments</h2>
+      <p>
+        YAML supports comments. JSON does not. If you find yourself wanting to annotate a file, that is a strong
+        signal the file is human-edited and should probably be YAML, JSON5, TOML, or HCL.
+      </p>
+
+      <h2>6. References and anchors</h2>
+      <p>
+        YAML supports anchors (<code>&amp;name</code>) and aliases (<code>*name</code>) to deduplicate repeated
+        chunks. This is genuinely useful in long config files but also a frequent source of confusion. JSON has
+        no equivalent — you repeat yourself or compose at the application layer.
+      </p>
+
+      <h2>When each format is the right call</h2>
+
+      <h3>Pick JSON when…</h3>
+      <ul>
+        <li>The producer is a program (HTTP API, log line, telemetry event).</li>
+        <li>You need broad cross-language support without surprises.</li>
+        <li>Performance matters (parse speed, payload size after compression).</li>
+        <li>You need to round-trip through JavaScript (the browser, Node.js).</li>
+        <li>You need schema validation that's well-supported (JSON Schema is mature).</li>
+      </ul>
+
+      <h3>Pick YAML when…</h3>
+      <ul>
+        <li>The file is going to be edited by humans regularly.</li>
+        <li>You need comments (Kubernetes manifests, GitHub Actions workflows, dbt configs).</li>
+        <li>Brevity matters more than throughput.</li>
+        <li>You want anchors/aliases to keep configs DRY.</li>
+      </ul>
+
+      <h2>Converting between them</h2>
+      <p>
+        Both formats describe the same data model (mostly), so converting is usually a 4-line script. In Python:
+      </p>
+      <pre><code>{`# pip install pyyaml
+import json, yaml
+
+with open("config.yaml") as f:
+    data = yaml.safe_load(f)
+
+with open("config.json", "w") as f:
+    json.dump(data, f, indent=2)`}</code></pre>
+      <p>
+        For one-off conversion in the browser, the <a href="/tools/json-to-yaml">JSON ↔ YAML converter</a> on
+        JSONKit handles both directions client-side — your data never leaves the browser.
+      </p>
+
+      <h2>Bottom line</h2>
+      <p>
+        JSON and YAML are not competitors so much as complements. Use JSON for wires and machines, YAML for
+        configs and humans. When in doubt, pick the one that matches who is writing the file most often.
+      </p>
+    </div>
+  </article>
+</Layout>

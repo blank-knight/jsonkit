@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'About JSONKit — Free Privacy-First JSON Tools';
+const description =
+  'JSONKit is a free, open-source collection of browser-based JSON tools for developers. No accounts, no logs, no servers — your data never leaves your browser.';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <h1 class="text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        About JSONKit
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        A free, open-source toolkit for working with JSON, built for developers who care about privacy and speed.
+      </p>
+    </header>
+
+    <div class="article">
+      <h2>Why JSONKit exists</h2>
+      <p>
+        Every developer eventually needs to format, validate, convert, or compare JSON. The web is full of tools that
+        do exactly that — but most of them ship your payload to a remote server, ask you to sign up, or bury the
+        useful part under a wall of advertising.
+      </p>
+      <p>
+        JSONKit takes a different approach. Every tool runs <strong>entirely in your browser</strong>. We never see
+        your data, because it never reaches us. There is nothing to log because there is nothing to receive.
+      </p>
+
+      <h2>What you get</h2>
+      <ul>
+        <li><a href="/tools/json-formatter">JSON Formatter</a> — pretty-print and indent any JSON document.</li>
+        <li><a href="/tools/json-minifier">JSON Minifier</a> — strip whitespace for production payloads.</li>
+        <li><a href="/tools/json-validator">JSON Validator</a> — surface syntax errors with line and column.</li>
+        <li><a href="/tools/json-to-yaml">JSON ↔ YAML</a> — round-trip between the two configuration formats.</li>
+        <li><a href="/tools/json-to-csv">JSON ↔ CSV</a> — flatten records for spreadsheets and analytics tools.</li>
+        <li><a href="/tools/json-path-query">JSONPath Query</a> — extract values without writing code.</li>
+        <li><a href="/tools/json-diff">JSON Diff</a> — highlight structural differences between two payloads.</li>
+      </ul>
+
+      <h2>Principles</h2>
+      <h3>Client-side first</h3>
+      <p>
+        Each tool is a static page that loads the parser, runs your input locally, and renders the result.
+        After the first visit, most tools work offline.
+      </p>
+
+      <h3>No accounts, ever</h3>
+      <p>
+        There is no login flow, no user database, no email collection. Bookmark a tool, link it from a docs page,
+        share it with a teammate — that is the full integration story.
+      </p>
+
+      <h3>Open source</h3>
+      <p>
+        The full source code lives at
+        <a href="https://github.com/blank-knight/jsonkit" rel="noopener noreferrer" target="_blank">
+          github.com/blank-knight/jsonkit
+        </a>. Issues, suggestions, and pull requests are welcome.
+      </p>
+
+      <h3>Honest funding</h3>
+      <p>
+        JSONKit may show a small number of unobtrusive ads to cover hosting and domain costs. We never sell user
+        data — we don't have any to sell. See our <a href="/privacy">Privacy Policy</a> for the full breakdown.
+      </p>
+
+      <h2>Who builds this</h2>
+      <p>
+        JSONKit is maintained by an independent developer who got tired of pasting work data into random websites.
+        If a tool you need is missing, or an existing tool gets something wrong, open an issue on GitHub.
+      </p>
+
+      <h2>Stay in touch</h2>
+      <p>
+        Read the <a href="/blog">guides</a> for deeper articles on JSON, YAML, and related formats, or jump
+        straight into the <a href="/#tools">tool catalog</a>.
+      </p>
+    </div>
+  </article>
+</Layout>

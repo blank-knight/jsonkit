@@ -1,0 +1,190 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Converting JSON to CSV: Flatten Nested Objects the Right Way';
+const description =
+  'Why naive JSON-to-CSV conversion breaks on nested fields, and three flattening strategies that produce a clean CSV ready for spreadsheets.';
+const date = '2026-04-30';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        <time datetime={date}>{date}</time> · 6 min read
+      </p>
+      <h1 class="mt-2 text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        Converting JSON to CSV: Flatten Nested Objects the Right Way
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        JSON is hierarchical, CSV is a 2D grid. Most online converters quietly mangle nested fields. Here is how
+        to do it correctly, with patterns that survive real data.
+      </p>
+    </header>
+
+    <div class="article">
+      <h2>The core problem</h2>
+      <p>
+        CSV has rows and columns. JSON has objects, arrays of objects, and arbitrary nesting. The conversion is
+        trivial when your JSON is a flat list of records:
+      </p>
+      <pre><code>{`[
+  { "id": 1, "name": "Ada",   "email": "ada@example.com" },
+  { "id": 2, "name": "Linus", "email": "linus@example.com" }
+]`}</code></pre>
+      <p>Becomes:</p>
+      <pre><code>{`id,name,email
+1,Ada,ada@example.com
+2,Linus,linus@example.com`}</code></pre>
+      <p>
+        The trouble starts the moment a record has a nested object or an array. Then you have to decide:
+        flatten? duplicate rows? skip it? Each strategy is right for some situations and wrong for others.
+      </p>
+
+      <h2>Strategy 1: Dot-path flattening (simple objects)</h2>
+      <p>For nested objects without arrays, the cleanest answer is to flatten keys with a separator.</p>
+      <p>Input:</p>
+      <pre><code>{`[
+  {
+    "id": 1,
+    "user": { "name": "Ada", "email": "ada@example.com" },
+    "active": true
+  }
+]`}</code></pre>
+      <p>Output:</p>
+      <pre><code>{`id,user.name,user.email,active
+1,Ada,ada@example.com,true`}</code></pre>
+      <p>Python implementation:</p>
+      <pre><code>{`def flatten(obj, prefix="", sep="."):
+    out = {}
+    for k, v in obj.items():
+        key = f"{prefix}{sep}{k}" if prefix else k
+        if isinstance(v, dict):
+            out.update(flatten(v, key, sep))
+        else:
+            out[key] = v
+    return out
+
+records = [flatten(r) for r in data]`}</code></pre>
+      <p>
+        Use a separator that does not appear in your keys. <code>.</code> is conventional but breaks if your
+        keys legitimately contain dots — switch to <code>__</code> or <code>/</code> in that case.
+      </p>
+
+      <h2>Strategy 2: Cartesian product (one row per array element)</h2>
+      <p>
+        When each record has an array of items and you want one row per item, do a Cartesian-product flatten.
+      </p>
+      <p>Input:</p>
+      <pre><code>{`[
+  { "user": "Ada",   "tags": ["admin", "billing"] },
+  { "user": "Linus", "tags": ["viewer"] }
+]`}</code></pre>
+      <p>Output:</p>
+      <pre><code>{`user,tag
+Ada,admin
+Ada,billing
+Linus,viewer`}</code></pre>
+      <p>This is what spreadsheets and BI tools generally want — long-format data they can group themselves.</p>
+
+      <h2>Strategy 3: JSON-in-cell (preserve the nested data)</h2>
+      <p>
+        Sometimes you don't want to lose the structure. Encode the nested value as a JSON string in a single
+        cell:
+      </p>
+      <pre><code>{`id,user,tags
+1,Ada,"[""admin"",""billing""]"
+2,Linus,"[""viewer""]"`}</code></pre>
+      <p>
+        This is round-trippable but ugly in a spreadsheet. It's the right choice when the consumer is another
+        program that will parse the cell back into JSON.
+      </p>
+
+      <h2>Six things real-world converters get wrong</h2>
+      <h3>1. Inconsistent header order</h3>
+      <p>
+        If you collect headers from the first record only, later records that introduce new fields will be
+        silently dropped. Compute the header set as the union across all records:
+      </p>
+      <pre><code>{`headers = sorted({k for record in records for k in record.keys()})`}</code></pre>
+
+      <h3>2. Missing escaping</h3>
+      <p>
+        Cells that contain commas, double quotes, or newlines must be wrapped in double quotes, with internal
+        double quotes escaped as <code>""</code>. Don't roll this yourself — use the standard library:
+      </p>
+      <pre><code>{`# Python
+import csv
+
+with open("out.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=headers)
+    writer.writeheader()
+    writer.writerows(records)`}</code></pre>
+
+      <h3>3. Locale-specific number formatting</h3>
+      <p>
+        German Excel reads <code>1,5</code> as 1.5 and breaks on <code>1.5</code>. If your audience is in
+        Europe, consider semicolon-delimited "CSV" (TSV's underrated cousin). Or stick to dot-decimals and
+        force-import as UTF-8 in Excel.
+      </p>
+
+      <h3>4. UTF-8 BOM for Excel</h3>
+      <p>
+        Excel on Windows still mis-detects UTF-8 unless the file starts with a BOM. Write
+        <code>"﻿"</code> as the first character of the file, or use Python's
+        <code>encoding="utf-8-sig"</code>.
+      </p>
+
+      <h3>5. Nulls vs empty strings</h3>
+      <p>
+        JSON distinguishes <code>null</code>, <code>""</code>, and missing. CSV does not. Decide upfront which
+        becomes which — and document it. Most pipelines treat all three as empty cells, but analytics tools
+        sometimes care.
+      </p>
+
+      <h3>6. Mixed types in the same column</h3>
+      <p>
+        If a property is <code>true</code> in some records and <code>"yes"</code> in others, the CSV will
+        contain both — and the consumer will silently coerce one to a string. Normalize types before flattening.
+      </p>
+
+      <h2>One-liners that just work</h2>
+
+      <h3>Python (pandas)</h3>
+      <pre><code>{`import pandas as pd
+df = pd.json_normalize(data, sep=".")
+df.to_csv("out.csv", index=False, encoding="utf-8-sig")`}</code></pre>
+      <p>
+        <code>json_normalize</code> handles dot-path flattening for nested objects out of the box and is very
+        fast. For arrays, pass <code>record_path</code>.
+      </p>
+
+      <h3>JavaScript (Node.js)</h3>
+      <pre><code>{`// npm i papaparse
+import Papa from "papaparse";
+import { writeFileSync } from "fs";
+
+const flat = data.map(flatten); // your flatten()
+const csv = Papa.unparse(flat);
+writeFileSync("out.csv", "\\ufeff" + csv);`}</code></pre>
+
+      <h3>Browser (no install)</h3>
+      <p>
+        For one-off conversions, the <a href="/tools/json-to-csv">JSON to CSV converter</a> on JSONKit handles
+        flattening client-side, applies proper escaping, and lets you pick the separator and how to encode
+        nested arrays. Your data never leaves the browser.
+      </p>
+
+      <h2>Picking a strategy</h2>
+      <ul>
+        <li>Flat objects → dot-path flattening (Strategy 1).</li>
+        <li>Arrays you want to group later → Cartesian product, long format (Strategy 2).</li>
+        <li>Round-tripping back to a program → JSON-in-cell (Strategy 3).</li>
+      </ul>
+      <p>
+        The output format isn't really about the data — it's about who reads the file next. Choose the strategy
+        that makes their job easier, then trust the standard library to handle the escaping.
+      </p>
+    </div>
+  </article>
+</Layout>

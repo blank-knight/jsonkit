@@ -1,0 +1,203 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Validate JSON with JSON Schema: A Hands-On Guide';
+const description =
+  'Write your first JSON Schema, validate documents against it from Python, JavaScript, and the CLI, and avoid the most common pitfalls.';
+const date = '2026-04-30';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        <time datetime={date}>{date}</time> · 8 min read
+      </p>
+      <h1 class="mt-2 text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        Validate JSON with JSON Schema: A Hands-On Guide
+      </h1>
+      <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">
+        JSON Schema lets you describe the shape of valid JSON, then check any document against it. This guide
+        walks through writing a schema from scratch, validating in three languages, and the gotchas that catch
+        most teams.
+      </p>
+    </header>
+
+    <div class="article">
+      <h2>Why validate at all?</h2>
+      <p>
+        JSON's flexibility is also its hazard. Without validation, a typo in a config file silently changes
+        behavior, an upstream API quietly drops a field, and tests pass while production breaks. JSON Schema is
+        the standard answer: a JSON document that describes what other JSON documents must look like.
+      </p>
+      <p>It gives you three things:</p>
+      <ul>
+        <li><strong>Contract</strong> — a single source of truth for the shape of your data.</li>
+        <li><strong>Validation</strong> — automated checks at build, request, and storage time.</li>
+        <li><strong>Documentation</strong> — schemas double as API docs, with tooling like Swagger/OpenAPI.</li>
+      </ul>
+
+      <h2>Your first schema</h2>
+      <p>Suppose your application accepts user objects like this:</p>
+      <pre><code>{`{
+  "id": 42,
+  "email": "ada@example.com",
+  "roles": ["admin", "billing"],
+  "active": true
+}`}</code></pre>
+      <p>A minimal schema describing it:</p>
+      <pre><code>{`{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "User",
+  "type": "object",
+  "required": ["id", "email"],
+  "additionalProperties": false,
+  "properties": {
+    "id":    { "type": "integer", "minimum": 1 },
+    "email": { "type": "string", "format": "email" },
+    "roles": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["admin", "billing", "viewer"] },
+      "uniqueItems": true
+    },
+    "active": { "type": "boolean", "default": true }
+  }
+}`}</code></pre>
+      <p>Three keywords do most of the work:</p>
+      <ul>
+        <li><code>type</code> — the JSON data type expected at this position.</li>
+        <li><code>required</code> — properties that must be present.</li>
+        <li><code>additionalProperties: false</code> — reject unknown keys (very useful for catching typos).</li>
+      </ul>
+
+      <h2>Validating in Python</h2>
+      <p>The <code>jsonschema</code> package is the standard:</p>
+      <pre><code>{`# pip install jsonschema
+import json
+from jsonschema import Draft202012Validator
+
+with open("user.schema.json") as f:
+    schema = json.load(f)
+
+with open("user.json") as f:
+    instance = json.load(f)
+
+validator = Draft202012Validator(schema)
+errors = sorted(validator.iter_errors(instance), key=lambda e: e.path)
+
+if not errors:
+    print("OK")
+else:
+    for e in errors:
+        path = "/".join(map(str, e.path)) or "<root>"
+        print(f"{path}: {e.message}")`}</code></pre>
+      <p>
+        <code>iter_errors</code> reports <em>every</em> validation problem. <code>validator.validate(instance)</code>
+        raises on the first failure — fine for unit tests, less helpful for surfacing all issues at once.
+      </p>
+
+      <h2>Validating in JavaScript / TypeScript</h2>
+      <p>Use <code>ajv</code>, the de facto standard:</p>
+      <pre><code>{`// npm i ajv ajv-formats
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
+
+const ajv = new Ajv({ allErrors: true, strict: true });
+addFormats(ajv);
+
+const validate = ajv.compile(schema);
+const ok = validate(instance);
+
+if (!ok) {
+  for (const err of validate.errors ?? []) {
+    console.log(err.instancePath || "<root>", err.message);
+  }
+}`}</code></pre>
+      <p>
+        Two things to know: <code>allErrors: true</code> reports every mismatch (not just the first), and
+        <code>ajv-formats</code> adds support for <code>format: "email"</code>, <code>"date-time"</code>, etc.
+      </p>
+
+      <h2>Validating from the command line</h2>
+      <p>Several CLI tools wrap the same engines:</p>
+      <pre><code>{`# Python's check-jsonschema
+pipx install check-jsonschema
+check-jsonschema --schemafile user.schema.json user.json
+
+# Node's ajv-cli
+npm install -g ajv-cli
+ajv -s user.schema.json -d user.json --strict=false`}</code></pre>
+      <p>
+        Either is suitable for a CI step that fails the build on schema violations. Pair this with the
+        <a href="/tools/json-validator">JSON Validator</a> on JSONKit for quick syntax checks before running
+        schema validation.
+      </p>
+
+      <h2>Common gotchas</h2>
+      <h3>1. Forgetting <code>additionalProperties: false</code></h3>
+      <p>
+        Without it, JSON Schema accepts unknown properties silently. A typo like <code>"emial"</code> will sail
+        through validation. Set it to <code>false</code> at every <code>object</code> level unless you have a
+        specific reason to allow extension.
+      </p>
+
+      <h3>2. <code>required</code> on the wrong level</h3>
+      <p>
+        <code>required</code> takes a list of property <em>names</em>, not the properties themselves. Putting it
+        inside <code>properties</code> is a common mistake that effectively turns it off.
+      </p>
+
+      <h3>3. Conflating <code>type</code> and <code>format</code></h3>
+      <p>
+        <code>type: "string"</code> only requires that the value be a string. To require an email address,
+        ISO date, or UUID, add <code>format: "email" | "date" | "uuid"</code>. Without a format-aware library
+        (<code>ajv-formats</code>, <code>jsonschema[format-nongpl]</code>), formats are documented but not enforced.
+      </p>
+
+      <h3>4. Schema dialect mismatch</h3>
+      <p>
+        JSON Schema has gone through several drafts (4, 6, 7, 2019-09, 2020-12). Always declare the dialect with
+        <code>$schema</code> and use a validator that supports it. Mixing 2020-12 keywords with a Draft 7 validator
+        is a frequent source of confusing errors.
+      </p>
+
+      <h3>5. Reusing fragments without <code>$ref</code></h3>
+      <p>
+        For non-trivial schemas, use <code>$defs</code> and <code>$ref</code> to share fragments instead of
+        copy-pasting. It keeps the schema DRY and lets tools generate types from it cleanly:
+      </p>
+      <pre><code>{`{
+  "$defs": {
+    "Email": { "type": "string", "format": "email" }
+  },
+  "properties": {
+    "primaryEmail":   { "$ref": "#/$defs/Email" },
+    "secondaryEmail": { "$ref": "#/$defs/Email" }
+  }
+}`}</code></pre>
+
+      <h2>Generating types from schemas</h2>
+      <p>
+        A schema is also a TypeScript type generator. Tools like <code>json-schema-to-typescript</code> turn your
+        schema into <code>.d.ts</code> files at build time, so your runtime validation and your compile-time types
+        share a single source of truth.
+      </p>
+
+      <h2>When JSON Schema is the wrong tool</h2>
+      <ul>
+        <li>For pure transport contracts in a typed-language ecosystem, Protocol Buffers or Avro are denser and faster.</li>
+        <li>For configuration that's edited by humans, schema validation is helpful but you may also want a richer DSL (CUE, Dhall) that supports computation.</li>
+      </ul>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Start small: <code>type</code>, <code>required</code>, <code>additionalProperties: false</code>.</li>
+        <li>Use <code>jsonschema</code> in Python, <code>ajv</code> in JavaScript, <code>check-jsonschema</code> or
+        <code>ajv-cli</code> in CI.</li>
+        <li>Declare your draft with <code>$schema</code> to avoid silent compatibility issues.</li>
+        <li>Validate JSON syntax first (try the <a href="/tools/json-validator">browser validator</a>) — schema
+        validation only runs on syntactically valid JSON.</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

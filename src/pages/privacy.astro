@@ -1,0 +1,120 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Privacy Policy — JSONKit';
+const description =
+  'How JSONKit handles your data: what we collect, what we do not collect, third-party services we use, and your rights.';
+
+const lastUpdated = 'April 30, 2026';
+---
+
+<Layout title={title} description={description}>
+  <article class="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-10">
+      <h1 class="text-balance text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        Privacy Policy
+      </h1>
+      <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">Last updated: {lastUpdated}</p>
+    </header>
+
+    <div class="article">
+      <h2>1. Summary</h2>
+      <p>
+        JSONKit is a static website that runs JSON-related utilities entirely inside your browser. We do not
+        operate a backend that processes your JSON, we do not require accounts, and we do not log your inputs.
+        This page explains the small set of things we <em>do</em> collect, who else may collect data through this
+        site, and what choices you have.
+      </p>
+
+      <h2>2. Data you provide to the tools</h2>
+      <p>
+        Every tool on this site (Formatter, Validator, Minifier, Converters, Diff, JSONPath Query, etc.) runs
+        100% client-side. The JSON you paste is parsed and processed in your browser by JavaScript loaded from
+        our static files. <strong>Your input is never transmitted to our servers</strong> because there are no
+        servers in the processing path — JSONKit is hosted as static assets on a content delivery network.
+      </p>
+
+      <h2>3. Data we collect automatically</h2>
+      <h3>3.1 Web analytics</h3>
+      <p>
+        We use a privacy-respecting analytics provider (Vercel Web Analytics) to count page views and understand
+        which tools are popular. The provider does not set advertising cookies, does not build cross-site
+        profiles, and the data we see is aggregated and anonymized.
+      </p>
+      <h3>3.2 Server logs</h3>
+      <p>
+        Our hosting provider (Vercel) keeps short-lived request logs that include IP addresses, timestamps, and
+        URLs requested. These logs are used to detect abuse and operate the service. We do not associate them
+        with your inputs and we do not sell or share them.
+      </p>
+
+      <h2>4. Cookies and local storage</h2>
+      <p>JSONKit uses the following only:</p>
+      <ul>
+        <li>
+          <strong>Local storage</strong> — to remember your theme preference (light/dark) on this device. This
+          never leaves your browser.
+        </li>
+        <li>
+          <strong>Analytics cookie</strong> — set by our analytics provider for de-duplication of page views.
+          See the provider's documentation for details.
+        </li>
+      </ul>
+      <p>JSONKit does not use third-party tracking pixels or social media trackers.</p>
+
+      <h2>5. Advertising</h2>
+      <p>
+        JSONKit may display advertising provided by third-party networks such as Google AdSense in order to fund
+        hosting, domain costs, and ongoing development. When ads are enabled, the ad network may set cookies and
+        process limited information (such as IP address and user agent) to serve and measure ads. You can
+        review and control personalized advertising at
+        <a href="https://adssettings.google.com" rel="noopener noreferrer" target="_blank">adssettings.google.com</a>.
+      </p>
+      <p>
+        We do not share any JSON content you process on this site with advertising networks. Ads are served
+        based on the page's general topic, not based on the data you paste.
+      </p>
+
+      <h2>6. Third-party services</h2>
+      <ul>
+        <li><strong>Vercel</strong> — static hosting and edge delivery.</li>
+        <li><strong>Vercel Web Analytics</strong> — aggregated, privacy-respecting page analytics.</li>
+        <li><strong>Google AdSense</strong> — advertising (when enabled).</li>
+      </ul>
+
+      <h2>7. Children's privacy</h2>
+      <p>
+        JSONKit is not directed at children under 13. We do not knowingly collect information from children. If
+        you believe a child has provided personal information, please contact us so we can remove it.
+      </p>
+
+      <h2>8. Your rights</h2>
+      <p>
+        Depending on where you live (e.g. the EU/EEA, the UK, California), you may have rights to access,
+        correct, delete, or restrict processing of your personal data, and to object to direct marketing. Since
+        we do not maintain user accounts, most rights apply only to the limited data described above.
+      </p>
+
+      <h2>9. Data retention</h2>
+      <p>
+        Server access logs are typically retained for a few weeks by our hosting provider before being purged.
+        Aggregated analytics are retained for as long as they remain useful for understanding site performance.
+      </p>
+
+      <h2>10. Changes to this policy</h2>
+      <p>
+        We may update this Privacy Policy when we change the tools we use or how we run the service. The "Last
+        updated" date above reflects the most recent change. Material changes will be highlighted on the
+        homepage for a reasonable time.
+      </p>
+
+      <h2>11. Contact</h2>
+      <p>
+        Questions, comments, or requests about this policy can be sent via the GitHub repository at
+        <a href="https://github.com/blank-knight/jsonkit/issues" rel="noopener noreferrer" target="_blank">
+          github.com/blank-knight/jsonkit/issues
+        </a>.
+      </p>
+    </div>
+  </article>
+</Layout>

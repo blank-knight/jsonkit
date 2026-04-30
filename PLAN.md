@@ -65,7 +65,7 @@
 ## 五、技术栈（直接抄百年）
 
 - 框架：**Astro + Tailwind**
-- 部署：**Cloudflare Pages**（免费 + 全球 CDN）
+- 部署：**Vercel**（验证期，DX 顺、Web Analytics 自带）→ 复制到 5 站时切 **Cloudflare Pages**（免费版无限带宽，Vercel 免费版 100GB/月会超）
 - 内容：MD/MDX，Git 管理
 - 数据库：**PostgreSQL**（外链流程库用，本地 Docker）
 - 工程化：Claude Code 的 Skill / Agent / Hook
